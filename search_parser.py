@@ -32,19 +32,24 @@ class SearchEngine:
         return self.content
 
     def get_artist_info(self, element):
-        context = {}
         title = element.find('h2', class_='playlist-name')
         download = element.find('a', class_='playlist-btn-down')
         if not title or not download:
             return None
 
         title = title.find_all('a')
-        context['artist'] = {
-            'name': title[0].text,
-            'artist_link': self.main_url + title[0].get('href')
-        }
 
-        context['song'] = {
+        context = self.check_artist(title[0].text)
+        if not context:
+            context = {
+                'artist': {
+                    'name': title[0].text,
+                    'artist_link': self.main_url + title[0].get('href'),
+                    'songs': {}
+                }
+            }
+
+        context['artist']['songs'][len(context['artist']['songs'])] = {
             'name': title[1].text,
             'song_link': self.main_url + title[1].get('href'),
             'duration': element.find('span', class_='playlist-duration').text,
@@ -56,11 +61,16 @@ class SearchEngine:
         return len(self.content)
 
     def to_json(self):
-        return json.dumps(self.content, sort_keys=True, indent=4)
+        return json.dumps(self.content, indent=4)
 
-    def write_json(self):
-        with open('content.json', 'w') as file:
-            json.dump(self.content, file, sort_keys=True, indent=4)
+    def write_json(self, json_file):
+        if not json_file:
+            json_file = 'content.json'
+        elif json_file.find('.json') == -1:
+            json_file += '.json'
+
+        with open(json_file, 'w') as file:
+            json.dump(self.content, file, indent=4)
 
     def import_from_json(self, json_file, force=False):
         try:
@@ -77,13 +87,17 @@ class SearchEngine:
                     for i in new_content:
                         content = new_content[str(i)]
                         self.update_content(content)
-        except Exception as e:
-            print(e)
+        except:
             print('Invalid json!')
 
     def update_content(self, content):
         self.check_content(content)
         self.content[len(self)] = content
+
+    def check_artist(self, artist):
+        for i in self.content:
+            if self.content[i]['artist']['name'].lower() == artist.lower():
+                return self.content[i]
 
     @staticmethod
     def check_content(content):
