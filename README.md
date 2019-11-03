@@ -7,7 +7,7 @@
 
 ## Methods
  * `len(SearchEngine)` - number of results found
- * `import_from_json('json_file')` - update base with json file
+ * `import_from_json('json_file.json')` - update base with json file
  * `write_json()` - dump base to json
  * `to_json()` - convert base to json
  * `update_content()` - update base with 1 object
