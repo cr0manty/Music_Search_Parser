@@ -16,14 +16,14 @@ class SearchEngine:
         all_tracks = soup.find_all('li', class_='track')
 
         if all_tracks is None:
-            raise Exception('Empty track list')
+            print('Empty track list')
+            return
 
         self._try_get_list(all_tracks)
 
     def _try_get_list(self, track_list):
         for i in track_list:
             self._get_artist_info(i)
-
         return self.content
 
     def _get_artist_info(self, element):
@@ -33,20 +33,20 @@ class SearchEngine:
             return None
 
         title = title.find_all('a')
-
         artist_id = self.check_artist(title[0].text)
-        if not artist_id:
-            artist_id = len(self)
+
+        if artist_id is None:
+            artist_id = len(self.content)
             self.content[artist_id] = {
                 'artist': {
                     'name': title[0].text,
-                    'artist_link': self.main_url + title[0].get('href'),
-                    'songs': {}
+                    'search_link': self.main_url + title[0].get('href'),
+                    'tracklist': {}
                 }
             }
 
-        index = len(self.content[artist_id]['artist']['songs'])
-        self.content[artist_id]['artist']['songs'][index] = {
+        index = len(self.content[artist_id]['artist']['tracklist'])
+        self.content[artist_id]['artist']['tracklist'][index] = {
             'name': title[1].text,
             'duration': element.find('span', class_='playlist-duration').text,
             'download': self.main_url + download.get('href')
@@ -55,7 +55,7 @@ class SearchEngine:
     def __len__(self):
         length = 0
         for item, value in self.content.items():
-            length += len(value['artist']['songs'])
+            length += len(value['artist']['tracklist'])
         return length
 
     def to_json(self):
@@ -75,7 +75,6 @@ class SearchEngine:
         try:
             with open(json_file, 'r', encoding='utf8') as file:
                 new_content = json.loads(file, ensure_ascii=False)
-
                 if force:
                     for index, value in new_content.items():
                         self._check_content(value)
@@ -83,7 +82,7 @@ class SearchEngine:
                 else:
                     for index, value in new_content.items():
                         self._update_content(value)
-        except:
+        except Exception:
             print('Invalid json!')
 
     def _update_content(self, content):
@@ -92,16 +91,14 @@ class SearchEngine:
 
     def check_artist(self, artist):
         for index, value in self.content.items():
-            if value['artist']['name'].lower() == artist.lower():
+            artist_name = ''.join(value['artist']['name'].lower().split(' '))
+            if artist_name == ''.join(artist.lower().split(' ')):
                 return index
         return None
 
     @staticmethod
     def _check_content(content):
         if not content['artist'] or not content['song']:
-            raise ValueError
-        elif not content['artist']['name'] or not content['artist']['artist_link']:
-            raise ValueError
-        elif not content['song']['name'] or not content['song']['song_link'] \
-                or not content['song']['duration'] or not content['song']['download']:
-            raise ValueError
+            raise TypeError
+        elif not content['artist']['name'] or not content['artist']['search_link']:
+            raise TypeError
