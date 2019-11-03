@@ -1,12 +1,11 @@
 # Music parser
 
  ## Console output
-1. install requirements `pip install requirements.txt`
-2. Start `main.py` file in command line/terminal `python main.py`
-3.
+1. install python and pip
+2. install requirements `pip install requirements.txt`
+3. Start `main.py` file in command line/terminal `python main.py`
+4. select menu item and wait
  
- 
-
 ## Class functional
 
 ### How to start
