@@ -25,9 +25,7 @@ class SearchEngine:
 
     def try_get_list(self, track_list):
         for i in track_list:
-            context = self.get_artist_info(i)
-            if context:
-                self.content[len(self)] = context
+            self.get_artist_info(i)
 
         return self.content
 
@@ -39,9 +37,10 @@ class SearchEngine:
 
         title = title.find_all('a')
 
-        context = self.check_artist(title[0].text)
-        if not context:
-            context = {
+        artist_id = self.check_artist(title[0].text)
+        if not artist_id:
+            artist_id = len(self)
+            self.content[artist_id] = {
                 'artist': {
                     'name': title[0].text,
                     'artist_link': self.main_url + title[0].get('href'),
@@ -49,19 +48,22 @@ class SearchEngine:
                 }
             }
 
-        context['artist']['songs'][len(context['artist']['songs'])] = {
+        index = len(self.content[artist_id]['artist']['songs'])
+        self.content[artist_id]['artist']['songs'][index] = {
             'name': title[1].text,
             'song_link': self.main_url + title[1].get('href'),
             'duration': element.find('span', class_='playlist-duration').text,
             'download': self.main_url + download.get('href')
         }
-        return context
 
     def __len__(self):
-        return len(self.content)
+        length = 0
+        for item, value in self.content.items():
+            length += len(value['artist']['songs'])
+        return length
 
     def to_json(self):
-        return json.dumps(self.content, indent=4)
+        return json.dumps(self.content, indent=4, ensure_ascii=False)
 
     def write_json(self, json_file):
         if not json_file:
@@ -69,24 +71,22 @@ class SearchEngine:
         elif json_file.find('.json') == -1:
             json_file += '.json'
 
-        with open(json_file, 'w') as file:
-            json.dump(self.content, file, indent=4)
+        with open(json_file, 'w', encoding='utf8') as file:
+            json_text = json.dumps(self.content, indent=4, ensure_ascii=False)
+            file.write(json_text)
 
     def import_from_json(self, json_file, force=False):
         try:
-            with open(json_file, 'r') as file:
-                json_content = file.read()
-                new_content = json.loads(json_content)
+            with open(json_file, 'r', encoding='utf8') as file:
+                new_content = json.loads(file, ensure_ascii=False)
 
                 if force:
-                    for i in new_content:
-                        content = new_content[i]
-                        self.check_content(content)
-                    self.content = new_content
+                    for index, value in new_content.items():
+                        self.check_content(value)
+                    self.content = value
                 else:
-                    for i in new_content:
-                        content = new_content[str(i)]
-                        self.update_content(content)
+                    for index, value in new_content.items():
+                        self.update_content(value)
         except:
             print('Invalid json!')
 
@@ -95,9 +95,10 @@ class SearchEngine:
         self.content[len(self)] = content
 
     def check_artist(self, artist):
-        for i in self.content:
-            if self.content[i]['artist']['name'].lower() == artist.lower():
-                return self.content[i]
+        for index, value in self.content.items():
+            if value['artist']['name'].lower() == artist.lower():
+                return index
+        return None
 
     @staticmethod
     def check_content(content):
