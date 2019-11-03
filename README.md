@@ -11,7 +11,7 @@
 ### How to start
 * Create SearchEngine object
 * Call start method with search query
-* SearchEngine.content will store all the results found 
+*  SearchEngine `content` will store all the results found 
 
 ### Methods
  * `len(SearchEngine)` - number of results found
