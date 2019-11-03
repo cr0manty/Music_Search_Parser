@@ -2,3 +2,4 @@
 venv/
 *.mp3
 *.json
+test.py
