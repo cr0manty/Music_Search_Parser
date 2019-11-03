@@ -26,7 +26,7 @@ class SearchEngine:
 
         return self.content
 
-    async def _get_artist_info(self, element):
+    def _get_artist_info(self, element):
         title = element.find('h2', class_='playlist-name')
         download = element.find('a', class_='playlist-btn-down')
         if not title or not download:
