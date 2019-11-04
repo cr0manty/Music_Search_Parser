@@ -24,7 +24,6 @@ class SearchEngine:
     def _try_get_list(self, track_list):
         for i in track_list:
             self._get_artist_info(i)
-        return self.content
 
     def _get_artist_info(self, element):
         title = element.find('h2', class_='playlist-name')
@@ -35,7 +34,7 @@ class SearchEngine:
         title = title.find_all('a')
         artist_id = self.check_artist(title[0].text)
 
-        if artist_id is None:
+        if artist_id == -1:
             artist_id = len(self.content)
             self.content[artist_id] = {
                 'artist': {
@@ -74,31 +73,39 @@ class SearchEngine:
     def import_from_json(self, json_file, force=False):
         try:
             with open(json_file, 'r', encoding='utf8') as file:
-                new_content = json.loads(file, ensure_ascii=False)
+                new_content = json.loads(file.read())
                 if force:
                     for index, value in new_content.items():
-                        self._check_content(value)
+                        self.check_content(value)
                     self.content = value
                 else:
                     for index, value in new_content.items():
-                        self._update_content(value)
+                        self.update_content(value)
         except Exception:
             print('Invalid json!')
 
-    def _update_content(self, content):
-        self._check_content(content)
-        self.content[len(self)] = content
+    def update_content(self, content):
+        self.check_content(content)
+        artist_id = self.check_artist(content['artist']['name'])
+
+        if artist_id == -1:
+            artist_id = len(self.content)
+            self.content[artist_id] = content['artist']
+
+        index = len(self.content[artist_id]['artist']['tracklist'])
+        for item in content['artist']['tracklist']:
+            self.content[artist_id]['artist']['tracklist'][index] = item
+            index += 1
 
     def check_artist(self, artist):
         for index, value in self.content.items():
             artist_name = ''.join(value['artist']['name'].lower().split(' '))
             if artist_name == ''.join(artist.lower().split(' ')):
                 return index
-        return None
+        return -1
 
     @staticmethod
-    def _check_content(content):
-        if not content['artist'] or not content['song']:
-            raise TypeError
-        elif not content['artist']['name'] or not content['artist']['search_link']:
+    def check_content(content):
+        if not content['artist'] or not content['artist']['tracklist'] or \
+                not content['artist']['name'] or not content['artist']['search_link']:
             raise TypeError
