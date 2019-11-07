@@ -3,7 +3,7 @@ import requests
 import json
 
 from app.db import DBConnection
-from .config import check_artist_content
+from config import check_artist_content
 
 
 class SearchEngine:
@@ -20,10 +20,10 @@ class SearchEngine:
         all_tracks = soup.find_all('li', class_='track')
 
         if all_tracks is None:
-            print('Empty track list')
-            return
+            raise Exception('Empty track list')
 
-        self._try_get_list(all_tracks)
+        for track in all_tracks:
+            self._get_artist_info(track)
 
     def _try_get_list(self, track_list):
         for i in track_list:
@@ -36,24 +36,18 @@ class SearchEngine:
             return None
 
         title = title.find_all('a')
-        artist_id = self.check_artist(title[0].text)
+        if self.database.is_artist_exist(title[0].text):
+            self.database.add_artist({
+                'name': title[0].text,
+                'search_link': self.main_url + title[0].get('href'),
+            })
 
-        if artist_id == -1:
-            artist_id = len(self.content)
-            self.content[artist_id] = {
-                'artist': {
-                    'name': title[0].text,
-                    'search_link': self.main_url + title[0].get('href'),
-                    'tracklist': {}
-                }
-            }
-
-        index = len(self.content[artist_id]['artist']['tracklist'])
-        self.content[artist_id]['artist']['tracklist'][index] = {
+        self.database.add_song({
+            'artist': title[0].text,
             'name': title[1].text,
             'duration': element.find('span', class_='playlist-duration').text,
             'download': self.main_url + download.get('href')
-        }
+        })
 
     def __len__(self):
         length = 0
@@ -87,25 +81,4 @@ class SearchEngine:
                         self.update_content(value)
         except Exception:
             print('Invalid json!')
-
-    def update_content(self, content):
-        check_artist_content(content)
-        artist_id = self.check_artist(content['artist']['name'])
-
-        if artist_id == -1:
-            artist_id = len(self.content)
-            self.content[artist_id] = content['artist']
-
-        index = len(self.content[artist_id]['artist']['tracklist'])
-        for item in content['artist']['tracklist']:
-            self.content[artist_id]['artist']['tracklist'][index] = item
-            index += 1
-
-    def check_artist(self, artist):
-        for index, value in self.content.items():
-            artist_name = ''.join(value['artist']['name'].lower().split(' '))
-            if artist_name == ''.join(artist.lower().split(' ')):
-                return index
-        return -1
-
 

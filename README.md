@@ -19,9 +19,6 @@
  * `import_from_json` - update database from json file
  * `write_json` - dump database to json file
  * `to_json` - dump database to json
- * `update_content` - update database with 1 object 
  * `check_content` - check object for database format
- * `check_artist` - check the artist name and return index of artist in database, if the artist is not in the database, then returns `-1`
  * `_get_artist_info` - get info about the artist, if there is no artist in the database, then create a new
- * `_try_get_list` - for loop for `get_artist_info`
  

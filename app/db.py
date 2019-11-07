@@ -11,17 +11,17 @@ class DBConnection:
             self.data = self.client.music_search
         except ConnectionFailure:
             raise ConnectionFailure("Can't connect to MongoDB '{}:{}'".format(host, port))
+        except Exception as e: #delete
+            print(e)
 
     def add_artist(self, artist):
         self.data.artist.insert(artist)
 
     def add_song(self, content):
-        artist = content.get('artist')
-        data_artist = self.data.artist.find(artist['name'])
-        if data_artist:
-            pass
-        else:
-            self.data.artist.insert(artist)
+        if not self.is_artist_exist(content['artist']):
+            raise Exception("Artist doesn't exist")
+
+        self.data.tracklist.insert(content)
 
     def add_artists(self, artists):
         pass
@@ -38,6 +38,9 @@ class DBConnection:
     def get_artist(self, artist_name):
         return self.data.artist.find(artist_name)
 
+    def is_artist_exist(self, artist_name):
+        return self.data.artist.find(artist_name).count()
+
     def show_all(self):
         return self.data.artist.find()
 
@@ -48,14 +51,3 @@ class DBConnection:
         return self.data.artist.find().count()
 
 
-if __name__ == '__main__':
-    db = DBConnection()
-    db.add_artist({
-        'name': 'sd',
-        'search_link': 'sd',
-        'tracklist': {}
-    })
-
-    print(len(db))
-    print(db.show_all()[0])
-    i = 0
