@@ -2,15 +2,17 @@ from bs4 import BeautifulSoup
 import requests
 import json
 
+from app.db import DBConnection
 from .config import check_artist_content
 
 
 class SearchEngine:
     content = {}
 
-    def __init__(self):
+    def __init__(self, host='localhost', port=27017):
         self.main_url = 'https://ru-music.com'
         self.search_url = 'https://ru-music.com/search/{}'
+        self.database = DBConnection(host, port)
 
     def start(self, for_search):
         html = requests.get(self.search_url.format(for_search)).text
