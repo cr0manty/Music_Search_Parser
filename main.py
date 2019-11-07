@@ -1,4 +1,4 @@
-from search_parser import SearchEngine
+from app.search_parser import SearchEngine
 
 menu = '''
 Enter a number to get started:

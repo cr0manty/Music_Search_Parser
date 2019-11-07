@@ -2,6 +2,8 @@ from bs4 import BeautifulSoup
 import requests
 import json
 
+from .config import check_artist_content
+
 
 class SearchEngine:
     content = {}
@@ -76,7 +78,7 @@ class SearchEngine:
                 new_content = json.loads(file.read())
                 if force:
                     for index, value in new_content.items():
-                        self.check_content(value)
+                        check_artist_content(value)
                     self.content = value
                 else:
                     for index, value in new_content.items():
@@ -85,7 +87,7 @@ class SearchEngine:
             print('Invalid json!')
 
     def update_content(self, content):
-        self.check_content(content)
+        check_artist_content(content)
         artist_id = self.check_artist(content['artist']['name'])
 
         if artist_id == -1:
@@ -104,8 +106,4 @@ class SearchEngine:
                 return index
         return -1
 
-    @staticmethod
-    def check_content(content):
-        if not content['artist'] or not content['artist']['tracklist'] or \
-                not content['artist']['name'] or not content['artist']['search_link']:
-            raise TypeError
+
