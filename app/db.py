@@ -96,7 +96,3 @@ class DBConnection:
 
     def __len__(self):
         return Artist.objects.count()
-
-
-class DBConnectionError(Exception):
-    pass
