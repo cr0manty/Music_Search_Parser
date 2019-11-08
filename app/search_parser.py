@@ -1,9 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
-import json
 
 from app.db import DBConnection
-from config import check_artist_content
 
 
 class SearchEngine:
@@ -37,23 +35,15 @@ class SearchEngine:
 
         title = title.find_all('a')
         if self.database.is_artist_exist(title[0].text):
-            self.database.add_artist({
-                'name': title[0].text,
-                'search_link': self.main_url + title[0].get('href'),
-            })
+            self.database.add_artist(title[0].text, self.main_url + title[0].get('href'))
 
-        self.database.add_song({
-            'artist': title[0].text,
-            'name': title[1].text,
-            'duration': element.find('span', class_='playlist-duration').text,
-            'download': self.main_url + download.get('href')
-        })
+        self.database.add_song(title[0].text, title[1].text,
+                               element.find('span', class_='playlist-duration').text,
+                               self.main_url + download.get('href')
+                               )
 
     def __len__(self):
-        length = 0
-        for item, value in self.content.items():
-            length += len(value['artist']['tracklist'])
-        return length
+        return len(self.database)
 
     def to_json(self):
         return json.dumps(self.content, indent=4, ensure_ascii=False)
@@ -81,4 +71,3 @@ class SearchEngine:
                         self.update_content(value)
         except Exception:
             print('Invalid json!')
-
