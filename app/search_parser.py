@@ -1,4 +1,6 @@
 from bs4 import BeautifulSoup
+from json import loads as json_load
+
 import requests
 
 from app.db import DBConnection
@@ -34,7 +36,7 @@ class SearchEngine:
             return None
 
         title = title.find_all('a')
-        if self.database.is_artist_exist(title[0].text):
+        if not self.database.is_artist_exist(title[0].text):
             self.database.add_artist(title[0].text, self.main_url + title[0].get('href'))
 
         self.database.add_song(title[0].text, title[1].text,
@@ -46,28 +48,19 @@ class SearchEngine:
         return len(self.database)
 
     def to_json(self):
-        return json.dumps(self.content, indent=4, ensure_ascii=False)
+        return self.database.to_json_artist(),\
+               self.database.to_json_song()
 
     def write_json(self, json_file=''):
         if not json_file:
-            json_file = 'content.json'
+            json_file = 'content{}.json'
         elif json_file.find('.json') == -1:
-            json_file += '.json'
+            json_file += '{}.json'
+        else:
+            index = json_file.rfind('.')
+            json_file = json_file[0:index] + '{}' + json_file[index+1:-1]
 
-        with open(json_file, 'w', encoding='utf8') as file:
-            json_text = json.dumps(self.content, indent=4, ensure_ascii=False)
-            file.write(json_text)
-
-    def import_from_json(self, json_file, force=False):
-        try:
-            with open(json_file, 'r', encoding='utf8') as file:
-                new_content = json.loads(file.read())
-                if force:
-                    for index, value in new_content.items():
-                        check_artist_content(value)
-                    self.content = value
-                else:
-                    for index, value in new_content.items():
-                        self.update_content(value)
-        except Exception:
-            print('Invalid json!')
+        with open(json_file.format('_artist'), 'w', encoding='utf8') as artist_file:
+            artist_file.write(self.database.to_json_artist())
+        with open(json_file.format('_song'), 'w', encoding='utf8') as song_file:
+            song_file.write(self.database.to_json_song())

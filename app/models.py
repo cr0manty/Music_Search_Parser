@@ -12,7 +12,7 @@ class Artist(Document):
 class Song(Document):
     artist = ReferenceField(Artist)
     name = StringField(required=True, unique=True, max_length=200)
-    duration = DateTimeField(required=True)
+    duration = StringField(required=True)
     download_url = URLField(required=True)
     created_at = DateTimeField(default=datetime.now())
 

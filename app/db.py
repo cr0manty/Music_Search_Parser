@@ -1,4 +1,5 @@
 from mongoengine import connect
+from datetime import datetime
 
 from errors import *
 from models import Artist, Song
@@ -8,7 +9,7 @@ class DBConnection:
     def __init__(self, host='localhost', port=27017):
         try:
             connect('music_search', host=host, port=port)
-        #todo
+        # todo
         except:
             raise MongoConnectionError
 
@@ -20,10 +21,10 @@ class DBConnection:
 
     @staticmethod
     def add_song(artist_name, name, duration, download):
-        artist = Artist.objects(name=artist_name).get()
+        artist = Artist.objects(name=artist_name)
         if not artist:
             raise ArtistDoesntExist
-        song = Song(artist=artist, name=name,
+        song = Song(artist=artist.get(), name=name,
                     duration=duration, download_url=download)
         if song:
             song.save()
@@ -81,18 +82,24 @@ class DBConnection:
         artists = Artist.objects()
         if not artists.count():
             raise ArtistDoesntExist
-        return artists.to_json()
+        return artists.to_json(indent=4, ensure_ascii=False)
 
     @staticmethod
     def to_json_song():
         song = Song.objects()
         if not song.count():
             raise ArtistDoesntExist
-        return song.to_json()
+        return song.to_json(indent=4, ensure_ascii=False)
 
     @staticmethod
-    def from_json(json_file):
-        pass
+    def to_json():
+        return Artist.objects.aggregate([
+            {'$lookup': {'from': 'song', 'localField': 'song.artist.id', 'foreignField': '_id', 'as': 'song_list'}},
+            {'$unwind': '$song_list'},
+            {'$project': {'name': 1, 'link': 1, 'created_at': 1,
+                          'song_list': {'$song_list.name': 1, '$song_list.duration': 1,
+                                        '$song_list.download_link': 1, '$song_list.created_at': 1}}}
+        ])
 
     def __len__(self):
         return Artist.objects.count()
