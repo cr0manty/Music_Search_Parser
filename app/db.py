@@ -1,5 +1,6 @@
 from mongoengine import connect
 
+from errors import *
 from models import Artist, Song
 
 
@@ -7,20 +8,21 @@ class DBConnection:
     def __init__(self, host='localhost', port=27017):
         try:
             connect('music_search', host=host, port=port)
-        except Exception as e:  # delete
-            print(e)
+        #todo
+        except:
+            raise MongoConnectionError
 
-    def add_artist(self, name, link):
+    @staticmethod
+    def add_artist(name, link):
         artist = Artist(name=name, link=link)
         if artist:
             artist.save()
 
-    def add_song(self, artist_name, name, duration, download):
+    @staticmethod
+    def add_song(artist_name, name, duration, download):
         artist = Artist.objects(name=artist_name).get()
-
         if not artist:
-            raise Exception("Artist doesn't exist")
-
+            raise ArtistDoesntExist
         song = Song(artist=artist, name=name,
                     duration=duration, download_url=download)
         if song:
@@ -35,46 +37,66 @@ class DBConnection:
             self.add_song(song['artist'], song['name'],
                           song['duration'], song['download'])
 
-    def get_artist_tracklist(self, artist_name):
-        try:
-            song = Song.objects.aggregate(
-                {"$lookup": {
-                    "from": "song",
-                    "foreignField": "_id",
-                    "localField": "artist",
-                    "as": "artist",
-                }},
-                {"$unwind": "artist"},
-                {"$match": {"artist.name": artist_name}})
-            return song
-        except Exception:
-            print('Error')
+    @staticmethod
+    def get_artist_tracklist(artist_name):
+        artist = Artist.objects(name=artist_name)
+        if not artist:
+            raise ArtistDoesntExist
+        artist_id = artist.get().id
+        tracklist = Song.objects(artist=artist_id)
+        if not tracklist:
+            raise ArtistEmptySongList
+        return tracklist
 
-    def get_artist_by_song(self, song_name):
-        song = Song.objects(name=song_name).get()
+    @staticmethod
+    def get_artist_by_song(song_name):
+        song = Song.objects(name=song_name)
+        if not song:
+            raise SongDoesntExist
+        artist = Artist.objects(_id=song.get().artist)
+        if not artist:
+            raise ArtistDoesntExist
+        return artist
 
-        if song:
-            return song.artist
-        else:
-            return None
+    @staticmethod
+    def get_artist(artist_name):
+        artist = Artist.objects(name=artist_name)
+        if not artist:
+            raise ArtistDoesntExist
+        return artist
 
-    def get_artist(self, artist_name):
-        return Artist.objects(name=artist_name).get()
-
-    def is_artist_exist(self, artist_name):
+    @staticmethod
+    def is_artist_exist(artist_name):
         return Artist.objects(name=artist_name).count()
 
-    def show_all_artist(self):
-        return Artist.objects()
+    @staticmethod
+    def show_all_artist():
+        artists = Artist.objects()
+        if not artists:
+            raise ArtistDoesntExist
+        return artists
 
-    def to_json_artist(self):
-        return Artist.objects.to_json()
+    @staticmethod
+    def to_json_artist():
+        artists = Artist.objects()
+        if not artists.count():
+            raise ArtistDoesntExist
+        return artists.to_json()
 
-    def to_json_song(self):
-        return Song.objects.to_json()
+    @staticmethod
+    def to_json_song():
+        song = Song.objects()
+        if not song.count():
+            raise ArtistDoesntExist
+        return song.to_json()
 
-    def from_json(self, json_file):
+    @staticmethod
+    def from_json(json_file):
         pass
 
     def __len__(self):
         return Artist.objects.count()
+
+
+class DBConnectionError(Exception):
+    pass
