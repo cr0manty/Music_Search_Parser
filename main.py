@@ -21,19 +21,12 @@ if __name__ == '__main__':
                 print("Search query can`t be empty")
             else:
                 se.start(for_search)
-                print(len(se))
         elif result == '2':
-            file_name = input('Enter file name for import\n')
-            if not file_name:
-                print("File name can`t be empty")
-            else:
-                se.import_from_json(file_name)
-        elif result == '3':
             file_name = input('Enter file name for export\n')
             se.write_json(file_name)
-        elif result == '4':
+        elif result == '3':
             print(se.to_json())
-        elif result == '5':
+        elif result == '4':
             print(len(se))
         elif result == '0':
             search = False
