@@ -13,11 +13,11 @@ class SearchEngine:
         self.database = DBConnection(host, port)
 
     def start(self, for_search):
-        html = requests.get(self.search_url.format(for_search)).text
+        html = requests.get(self.search_url.format('-'.join(for_search.split(' ')))).text
         soup = BeautifulSoup(html, features='html.parser')
         all_tracks = soup.find_all('li', class_='track')
-
-        if all_tracks is None:
+        # TODO:
+        if not all_tracks or all_tracks is None:
             raise Exception('Empty track list')
 
         artist_add, song_add = 0, 0
