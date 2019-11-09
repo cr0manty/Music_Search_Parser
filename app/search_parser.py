@@ -1,7 +1,5 @@
-from bs4 import BeautifulSoup
-from json import loads as json_load
-
 import requests
+from bs4 import BeautifulSoup
 
 from app.db import DBConnection
 
