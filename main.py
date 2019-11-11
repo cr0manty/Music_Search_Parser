@@ -3,10 +3,9 @@ from app.search_parser import SearchEngine
 menu = '''
 Enter a number to get started:
 1 - Start search
-2 - Import json
-3 - Export json
-4 - Print json
-5 - Show number of results found
+2 - Export json
+3 - Print json
+4 - Show number of results found
 0 - Exit
 '''
 
