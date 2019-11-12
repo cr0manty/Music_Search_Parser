@@ -22,6 +22,7 @@ class Artist(Document):
 
     def to_json(self, *args, **kwargs):
         media = kwargs.pop('media', '')
+        data = self.to_mongo()
 
         if media:
             artist_name = '-'.join(re.split("[, \-!?:]+", self.name))
@@ -30,10 +31,10 @@ class Artist(Document):
             ))
             with open(file_name, 'wb') as image_file:
                 image_file.write(self.image.read())
-
-        data = self.to_mongo()
+            data['image'] = file_name
+        else:
+            data.pop('image')
         data['created_at'] = data['created_at'].strftime(TIME_FORMAT)
-        data.pop('image')
         data.pop('_id')
         return json_util.dumps(data, *args, **kwargs)
 
@@ -51,6 +52,7 @@ class Song(Document):
 
     def to_json(self, *args, **kwargs):
         media = kwargs.pop('media', '')
+        data = self.to_mongo()
 
         if media:
             song_name = '-'.join(re.split("[, \-!?:]+", self.name))
@@ -59,11 +61,12 @@ class Song(Document):
             ))
             with open(file_name, 'wb') as song_file:
                 song_file.write(self.audio_file.read())
+            data['audio_file'] = file_name
+        else:
+            data.pop('audio_file')
 
-        data = self.to_mongo()
         data['artist'] = self.artist.name
         data['created_at'] = data['created_at'].strftime(TIME_FORMAT)
-        data.pop('audio_file')
         data.pop('_id')
         return json_util.dumps(data, *args, **kwargs)
 

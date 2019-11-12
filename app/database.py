@@ -10,11 +10,7 @@ class DBConnection:
     def __init__(self, host='localhost', port=27017):
         self.host = host
         self.port = port
-        try:
-            connect('music_search', host=self.host, port=self.port)
-        # todo
-        except:
-            raise Exception("Can't connect to mongodb")
+        connect('music_search', host=self.host, port=self.port)
 
     def __len__(self):
         return Artist.objects.count()
@@ -86,10 +82,12 @@ class DBConnection:
             return False
 
         self.download(kwargs.get('download_url'))
+        size = kwargs.get('duration_size')
+        size = ' '.join((size[2], size[3]))
         song = Song(artist=artist.get(), name=song_name,
                     duration=kwargs.get('duration_size')[0],
                     download_url=kwargs.get('download_url'),
-                    size=kwargs.get('duration_size')[2]
+                    size=size
                     )
         with open(TEMP_FILE, 'rb') as binary_file:
             song.audio_file.put(binary_file)

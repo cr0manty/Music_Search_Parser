@@ -45,7 +45,10 @@ class SearchEngine:
     def write_json(self, media=False):
         create_folders(media)
         json_file = json_name()
-        with open(json_file.format('_artist', DATE), 'w', encoding='utf8') as artist_file:
-            artist_file.write(self.database.to_json_artist(media))
-        with open(json_file.format('_song', DATE), 'w', encoding='utf8') as song_file:
-            song_file.write(self.database.to_json_song(media))
+        try:
+            with open(json_file.format('_artist', DATE), 'w', encoding='utf8') as artist_file:
+                artist_file.write(self.database.to_json_artist(media))
+            with open(json_file.format('_song', DATE), 'w', encoding='utf8') as song_file:
+                song_file.write(self.database.to_json_song(media))
+        except TypeError:
+            print('Database is empty')

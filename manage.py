@@ -21,7 +21,8 @@ if __name__ == '__main__':
         print(help)
     elif command == 'search':
         try:
-            for i in range(2, len(sys.argv)-2):
+            for i in range(2, len(sys.argv)):
+                print(sys.argv[i])
                 se.start(sys.argv[i])
         except IndexError:
             print('Invalid command!')
