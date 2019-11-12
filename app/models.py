@@ -1,10 +1,9 @@
 from bson import json_util
-import uuid
 import re
 
 from mongoengine import Document, QuerySet
 from mongoengine import ReferenceField, FileField, ImageField
-from mongoengine import StringField, URLField, DateTimeField
+from mongoengine import StringField, URLField, DateTimeField, BooleanField
 
 from app.settings import *
 
@@ -22,15 +21,18 @@ class Artist(Document):
     meta = {'queryset_class': CustomQuerySet}
 
     def to_json(self, *args, **kwargs):
-        artist_name = '-'.join(re.split("[, \-!?:]+", self.name))
-        file_name = '{}\\{}-{}.{}'.format(
-            IMAGE, artist_name, DATE, 'jpg'
-        )
-        with open(file_name, 'wb') as image_file:
-            image_file.write(self.image.read())
+        media = kwargs.pop('media', '')
+
+        if media:
+            artist_name = '-'.join(re.split("[, \-!?:]+", self.name))
+            file_name = os.path.join(IMAGE, '{}-{}.{}'.format(
+                artist_name, DATE, 'jpg'
+            ))
+            with open(file_name, 'wb') as image_file:
+                image_file.write(self.image.read())
 
         data = self.to_mongo()
-        data['created_at'] = data['created_at'].strftime("%m/%d/%Y, %H:%M:%S")
+        data['created_at'] = data['created_at'].strftime(TIME_FORMAT)
         data.pop('image')
         data.pop('_id')
         return json_util.dumps(data, *args, **kwargs)
@@ -48,16 +50,37 @@ class Song(Document):
     meta = {'queryset_class': CustomQuerySet}
 
     def to_json(self, *args, **kwargs):
-        song_name = '-'.join(re.split("[, \-!?:]+", self.name))
-        file_name = '{}\\{}-{}.{}'.format(
-            AUDIO, song_name, DATE, 'mp3'
-        )
-        with open(file_name, 'wb') as song_file:
-            song_file.write(self.audio_file.read())
+        media = kwargs.pop('media', '')
+
+        if media:
+            song_name = '-'.join(re.split("[, \-!?:]+", self.name))
+            file_name = os.path.join(AUDIO, '{}-{}.{}'.format(
+                song_name, DATE, 'mp3'
+            ))
+            with open(file_name, 'wb') as song_file:
+                song_file.write(self.audio_file.read())
 
         data = self.to_mongo()
         data['artist'] = self.artist.name
-        data['created_at'] = data['created_at'].strftime("%m/%d/%Y, %H:%M:%S")
+        data['created_at'] = data['created_at'].strftime(TIME_FORMAT)
         data.pop('audio_file')
         data.pop('_id')
         return json_util.dumps(data, *args, **kwargs)
+
+
+class Log(Document):
+    type_added = StringField(required=True)
+    name_added = StringField(required=True)
+    created_at = DateTimeField(default=datetime.now())
+    added = BooleanField(required=True, default=False)
+
+    def save(self, *args, **kwargs):
+        print('{}:\n{}'.format(
+            'Add' if self.added else 'Error',
+            str(self)
+        ))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return "<Type: {} - {}. Date: {}>".format(self.type_added, self.name_added,
+                                                  self.created_at.strftime(TIME_FORMAT))

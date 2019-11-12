@@ -2,7 +2,7 @@ from mongoengine import connect
 import urllib.request
 import shutil
 
-from app.models import Artist, Song
+from app.models import Artist, Song, Log
 from app.settings import *
 
 
@@ -43,18 +43,31 @@ class DBConnection:
         artist_name = kwargs['title'][0]
         artist = Artist.objects(name=artist_name)
         if artist.count():
+            Log(
+                type_added='artist',
+                name_added=artist_name
+            ).save()
             return False
 
         self.download(kwargs.get('img'))
         artist = Artist(name=artist_name)
 
-        with open(TEMP_FILE, 'rb') as binary_file:
-            artist.image.put(binary_file)
-        shutil.rmtree(TEMP)
-
         if artist:
+            Log(
+                type_added='artist',
+                name_added=artist_name,
+                added=True
+            ).save()
+            with open(TEMP_FILE, 'rb') as binary_file:
+                artist.image.put(binary_file)
+            shutil.rmtree(TEMP)
+
             artist.save()
             return True
+        Log(
+            type_added='artist',
+            name_added=artist_name
+        ).save()
         return False
 
     def add_song(self, **kwargs):
@@ -66,6 +79,10 @@ class DBConnection:
             self.add_artist(**kwargs)
 
         if self.is_song_exist(song_name):
+            Log(
+                type_added='song',
+                name_added=song_name
+            ).save()
             return False
 
         self.download(kwargs.get('download_url'))
@@ -79,7 +96,17 @@ class DBConnection:
         shutil.rmtree(TEMP)
         if song:
             song.save()
+            Log(
+                type_added='song',
+                name_added=song_name,
+                added=True
+            ).save()
             return True
+
+        Log(
+            type_added='song',
+            name_added=song_name
+        ).save()
         return False
 
     @staticmethod
@@ -132,15 +159,15 @@ class DBConnection:
         return artists
 
     @staticmethod
-    def to_json_artist():
+    def to_json_artist(media=False):
         artists = Artist.objects()
         if not artists:
             return False
-        return artists.to_json(indent=4, ensure_ascii=False)
+        return artists.to_json(indent=4, ensure_ascii=False, media=media)
 
     @staticmethod
-    def to_json_song():
+    def to_json_song(media=False):
         song = Song.objects()
         if not song:
             return False
-        return song.to_json(indent=4, ensure_ascii=False)
+        return song.to_json(indent=4, ensure_ascii=False, media=media)

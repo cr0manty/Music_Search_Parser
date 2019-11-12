@@ -3,6 +3,7 @@ from datetime import datetime
 
 SEARCH_SITE = 'https://muzfan.net/?do=search&subaction=search&story={}'
 DATE = str(int(datetime.timestamp(datetime.now())))
+TIME_FORMAT = '%m/%d/%Y %H:%M:%S'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MEDIA = os.path.join(BASE_DIR, 'media')
@@ -16,18 +17,12 @@ if not os.path.exists(MEDIA):
     os.makedirs(MEDIA)
 
 
-def create_folders():
+def create_folders(media):
     os.makedirs(DATE_FOLDER)
-    os.makedirs(IMAGE)
-    os.makedirs(AUDIO)
+    if media:
+        os.makedirs(IMAGE)
+        os.makedirs(AUDIO)
 
 
-def json_name(file):
-    if not file:
-        file = 'content{}-{}.json'
-    elif file.find('.json') == -1:
-        file += '{}-{}.json'
-    else:
-        index = file.rfind('.')
-        file = file[0:index] + '{}-{}' + file[index + 1:-1]
-    return os.path.join(DATE_FOLDER, file)
+def json_name():
+    return os.path.join(DATE_FOLDER, 'content{}-{}.json')

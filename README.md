@@ -1,5 +1,6 @@
 # Music parser
 
+
 ## Console output
  1. install MongoDB, if not installed
  2. start MongoDB service
@@ -7,6 +8,7 @@
  4. install requirements `pip install requirements.txt`
  5. Start `main.py` file with command line or terminal `python main.py`
  6. select menu item and wait
+ 
  
 ## Class functional
 
@@ -17,6 +19,8 @@
  * MongoDB database with name `music_search` will contain all find info
  * `music_search.artist` - info about artists
  * `music_search.song` - info about songs
+ * `music_search.log` - logs
+
 
 ### Methods
  * `start` - start parse site with search request
@@ -25,6 +29,30 @@
  * `to_json` - dump database to json (return array of artist and song database in json)
  * `_get_artist_info` - get info about the artist, if there is no artist in the database, then create a new
  
+ 
+### Models
+
+ #### Artist
+  * `name` - artist name
+  * `image` - artist image(from song)
+  * `created_at` - time when artist was added 
+  
+ #### Song
+  * `artist` - artist id
+  * `name` - song name
+  * `duration` - song duration
+  * `size` - song size
+  * `download_url` - url for download song
+  * `audio_file` - song audio file
+  * `created_at` - time when song was added 
+
+ #### Log
+  * `type_added` - type of added model (song/artist)
+  * `name_added` - added model name
+  * `created_at` - time when log was added 
+  * `added` - item was added or error
+
+  
 ### DB Methods
  * `add_artists` - add many artists
  * `add_artist` - add one artist
@@ -37,3 +65,4 @@
  * `show_all_artist` - return all artist in database
  * `to_json_artist` - dump artist database to json 
  * `to_json_song` - dump song database to json 
+ * `download` - download file from url to temp file
