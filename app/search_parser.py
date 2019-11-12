@@ -2,12 +2,12 @@ import requests
 from bs4 import BeautifulSoup
 
 from app.settings import *
-from app.database import DBConnection
+from app.database import MusicSearchDB
 
 
 class SearchEngine:
     def __init__(self, host='localhost', port=27017):
-        self.database = DBConnection(host, port)
+        self.database = MusicSearchDB(host, port)
 
     def start(self, for_search):
         search = SEARCH_SITE.format('+'.join(for_search.split(' ')))

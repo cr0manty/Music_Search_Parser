@@ -4,8 +4,8 @@
 ## Console output
  1. install MongoDB, if not installed
  2. start MongoDB service
- 3. install python and pip
- 4. install requirements `pip install requirements.txt`
+ 3. install `python >= 3.6` and `pip >= 19.0.3`
+ 4. install requirements `pip install -r requirements.txt`
  5. Start `manage.py` file with terminal `python manage.py command [args]`
 
 ##### Commands:
@@ -35,7 +35,7 @@
  * `_get_artist_info` - get info about the artist, if there is no artist in the database, then create a new
  
  
-### Models
+### Database Models
 
  #### Artist
   * `name` - artist name
@@ -58,7 +58,7 @@
   * `added` - item was added or error
 
   
-### DB Methods
+### Database Methods
  * `add_artists` - add many artists
  * `add_artist` - add one artist
  * `add_tracklist` - add track list (>1 song)

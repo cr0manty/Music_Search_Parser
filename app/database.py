@@ -6,7 +6,7 @@ from app.models import Artist, Song, Log
 from app.settings import *
 
 
-class DBConnection:
+class MusicSearchDB:
     def __init__(self, host='localhost', port=27017):
         self.host = host
         self.port = port
