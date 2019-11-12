@@ -10,8 +10,8 @@
 
 ##### Commands:
  * `help` - write help info
- * `search [args]` - send "search query in quotation marks" as args
- * `export [args]` - send 1/0 - dump media files or not 
+ * `search [args]` - send "search query in quotation marks" as args. Start search songs with search query
+ * `export [args]` - send 1/0 - dump media files or not. Export json and media files
  
 ## Class functional
 
