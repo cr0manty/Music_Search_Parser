@@ -6,9 +6,12 @@
  2. start MongoDB service
  3. install python and pip
  4. install requirements `pip install requirements.txt`
- 5. Start `main.py` file with command line or terminal `python main.py`
- 6. select menu item and wait
- 
+ 5. Start `manage.py` file with terminal `python manage.py command [args]`
+
+##### Commands:
+ * `help` - write help info
+ * `search [args]` - send "search query in quotation marks" as args
+ * `export [args]` - send 1/0 - dump media files or not 
  
 ## Class functional
 
@@ -17,6 +20,8 @@
  * Call start method with search query
  * SearchEngine will connect to MongoDB
  * MongoDB database with name `music_search` will contain all find info
+ 
+ ##### Database Tables
  * `music_search.artist` - info about artists
  * `music_search.song` - info about songs
  * `music_search.log` - logs

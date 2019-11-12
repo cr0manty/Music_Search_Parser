@@ -7,8 +7,7 @@ Usage: manage.py command [args]
 Commands:
 help
 search, args="search query in quotation marks"
-export, args=media(1/0) - dump media files or not
-run(in future) 
+export, args=(1/0) - dump media files or not
 '''
 
 if __name__ == '__main__':
@@ -32,7 +31,5 @@ if __name__ == '__main__':
         except IndexError:
             media = 0
         se.write_json(media)
-    elif command == 'run':
-        print('Coming soon!')
     else:
         print('Invalid command!')
