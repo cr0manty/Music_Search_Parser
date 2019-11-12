@@ -25,7 +25,7 @@ class SearchEngine:
 
     def _get_artist_info(self, element):
         content = {
-            'title': element.get('data-artist').split('-'),
+            'title': element.get('data-artist').split(' - '),
             'download_url': element.get('data-track'),
             'img': element.get('data-img'),
             'duration_size': element.get('data-title').split(' '),
@@ -43,6 +43,7 @@ class SearchEngine:
                self.database.to_json_song()
 
     def write_json(self, json_file=''):
+        create_folders()
         json_file = json_name(json_file)
         with open(json_file.format('_artist', DATE), 'w', encoding='utf8') as artist_file:
             artist_file.write(self.database.to_json_artist())

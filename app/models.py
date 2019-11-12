@@ -1,9 +1,12 @@
 from bson import json_util
-from datetime import datetime
+import uuid
+import re
 
 from mongoengine import Document, QuerySet
 from mongoengine import ReferenceField, FileField, ImageField
 from mongoengine import StringField, URLField, DateTimeField
+
+from app.settings import *
 
 
 class CustomQuerySet(QuerySet):
@@ -19,6 +22,13 @@ class Artist(Document):
     meta = {'queryset_class': CustomQuerySet}
 
     def to_json(self, *args, **kwargs):
+        artist_name = '-'.join(re.split("[, \-!?:]+", self.name))
+        file_name = '{}\\{}-{}.{}'.format(
+            IMAGE, artist_name, DATE, 'jpg'
+        )
+        with open(file_name, 'wb') as image_file:
+            image_file.write(self.image.read())
+
         data = self.to_mongo()
         data['created_at'] = data['created_at'].strftime("%m/%d/%Y, %H:%M:%S")
         data.pop('image')
@@ -38,6 +48,13 @@ class Song(Document):
     meta = {'queryset_class': CustomQuerySet}
 
     def to_json(self, *args, **kwargs):
+        song_name = '-'.join(re.split("[, \-!?:]+", self.name))
+        file_name = '{}\\{}-{}.{}'.format(
+            AUDIO, song_name, DATE, 'mp3'
+        )
+        with open(file_name, 'wb') as song_file:
+            song_file.write(self.audio_file.read())
+
         data = self.to_mongo()
         data['artist'] = self.artist.name
         data['created_at'] = data['created_at'].strftime("%m/%d/%Y, %H:%M:%S")

@@ -1,14 +1,15 @@
 from mongoengine import connect
+import urllib.request
+import shutil
 
 from app.models import Artist, Song
-from app.downloader import Download
+from app.settings import *
 
 
 class DBConnection:
     def __init__(self, host='localhost', port=27017):
         self.host = host
         self.port = port
-        self.downloader = Download()
         try:
             connect('music_search', host=self.host, port=self.port)
         # todo
@@ -44,10 +45,12 @@ class DBConnection:
         if artist.count():
             return False
 
-        file_name = self.downloader.download(kwargs.get('img'), 'jpg')
+        self.download(kwargs.get('img'))
         artist = Artist(name=artist_name)
-        with open(file_name, 'rb') as byte_file:
-            artist.image.put(byte_file)
+
+        with open(TEMP_FILE, 'rb') as binary_file:
+            artist.image.put(binary_file)
+        shutil.rmtree(TEMP)
 
         if artist:
             artist.save()
@@ -65,19 +68,25 @@ class DBConnection:
         if self.is_song_exist(song_name):
             return False
 
-        file_name = self.downloader.download(kwargs.get('download_url'), 'mp3')
-
+        self.download(kwargs.get('download_url'))
         song = Song(artist=artist.get(), name=song_name,
                     duration=kwargs.get('duration_size')[0],
                     download_url=kwargs.get('download_url'),
                     size=kwargs.get('duration_size')[2]
                     )
-        with open(file_name, 'rb') as byte_file:
-            song.audio_file.put(byte_file)
+        with open(TEMP_FILE, 'rb') as binary_file:
+            song.audio_file.put(binary_file)
+        shutil.rmtree(TEMP)
         if song:
             song.save()
             return True
         return False
+
+    @staticmethod
+    def download(url):
+        if not os.path.exists(TEMP):
+            os.makedirs(TEMP)
+        urllib.request.urlretrieve(url, TEMP_FILE)
 
     @staticmethod
     def get_artist_tracklist(artist_name):
