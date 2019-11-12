@@ -1,27 +1,73 @@
 # Music parser
 
- ## Console output
-1. install python and pip
-2. install requirements `pip install requirements.txt`
-3. Start `main.py` file with command line or terminal `python main.py`
-4. select menu item and wait
+
+## Console output
+ 1. install MongoDB, if not installed
+ 2. start MongoDB service
+ 3. install `python >= 3.6` and `pip >= 19.0.3`
+ 4. install requirements `pip install -r requirements.txt`
+ 5. Start `manage.py` file with terminal `python manage.py command [args]`
+
+##### Commands:
+ * `help` - write help info
+ * `search [args]` - send "search query in quotation marks" as args
+ * `export [args]` - send 1/0 - dump media files or not 
  
 ## Class functional
 
 ### How to start
-* Create SearchEngine object
-* Call start method with search query
-*  SearchEngine `content` will store all the results found 
+ * Create SearchEngine object
+ * Call start method with search query
+ * SearchEngine will connect to MongoDB
+ * MongoDB database with name `music_search` will contain all find info
+ 
+ ##### Database Tables
+ * `music_search.artist` - info about artists
+ * `music_search.song` - info about songs
+ * `music_search.log` - logs
+
 
 ### Methods
-
- * `len` - number of results found
- * `import_from_json` - update database from json file
+ * `start` - start parse site with search request
+ * `len` - number of artist found
  * `write_json` - dump database to json file
- * `to_json` - dump database to json
- * `update_content` - update database with 1 object 
- * `check_content` - check object for database format
- * `check_artist` - check the artist name and return index of artist in database, if the artist is not in the database, then returns `-1`
+ * `to_json` - dump database to json (return array of artist and song database in json)
  * `_get_artist_info` - get info about the artist, if there is no artist in the database, then create a new
- * `_try_get_list` - for loop for `get_artist_info`
  
+ 
+### Database Models
+
+ #### Artist
+  * `name` - artist name
+  * `image` - artist image(from song)
+  * `created_at` - time when artist was added 
+  
+ #### Song
+  * `artist` - artist id
+  * `name` - song name
+  * `duration` - song duration
+  * `size` - song size
+  * `download_url` - url for download song
+  * `audio_file` - song audio file
+  * `created_at` - time when song was added 
+
+ #### Log
+  * `type_added` - type of added model (song/artist)
+  * `name_added` - added model name
+  * `created_at` - time when log was added 
+  * `added` - item was added or error
+
+  
+### Database Methods
+ * `add_artists` - add many artists
+ * `add_artist` - add one artist
+ * `add_tracklist` - add track list (>1 song)
+ * `add_song` - add one song
+ * `get_artist_tracklist` - get track list of artist with name
+ * `get_artist_by_song` - get song artist
+ * `get_artist` - get artist by name
+ * `is_artist_exist` - check artist in database
+ * `show_all_artist` - return all artist in database
+ * `to_json_artist` - dump artist database to json 
+ * `to_json_song` - dump song database to json 
+ * `download` - download file from url to temp file

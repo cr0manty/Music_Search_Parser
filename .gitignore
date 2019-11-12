@@ -1,5 +1,6 @@
 .idea/
 venv/
-*.mp3
-*.json
+media/
+temp/
+__pycache__/
 test.py
