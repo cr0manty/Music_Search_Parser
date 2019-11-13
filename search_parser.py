@@ -4,51 +4,47 @@ import json
 
 
 class SearchEngine:
+    search_url = 'https://muzfan.net/?do=search&subaction=search&story={}'
     content = {}
 
-    def __init__(self):
-        self.main_url = 'https://ru-music.com'
-        self.search_url = 'https://ru-music.com/search/{}'
-
     def start(self, for_search):
-        html = requests.get(self.search_url.format(for_search)).text
+        html = requests.get(self.search_url.format('+'.join(for_search.split(' ')))).text
         soup = BeautifulSoup(html, features='html.parser')
-        all_tracks = soup.find_all('li', class_='track')
+        all_tracks = soup.find_all('div', class_='track-item')
 
-        if all_tracks is None:
+        if not all_tracks:
             print('Empty track list')
             return
 
-        self._try_get_list(all_tracks)
-
-    def _try_get_list(self, track_list):
-        for i in track_list:
+        for i in all_tracks:
             self._get_artist_info(i)
 
     def _get_artist_info(self, element):
-        title = element.find('h2', class_='playlist-name')
-        download = element.find('a', class_='playlist-btn-down')
-        if not title or not download:
-            return None
-
-        title = title.find_all('a')
-        artist_id = self.check_artist(title[0].text)
+        content = {
+            'title': element.get('data-artist').split(' - '),
+            'download_url': element.get('data-track'),
+            'img': element.get('data-img'),
+            'duration_size': element.get('data-title').split(' '),
+        }
+        artist_id = self.check_artist(content['title'][0])
 
         if artist_id == -1:
             artist_id = len(self.content)
             self.content[artist_id] = {
                 'artist': {
-                    'name': title[0].text,
-                    'search_link': self.main_url + title[0].get('href'),
+                    'name': content['title'][0],
+                    'image': content['img'],
                     'tracklist': {}
                 }
             }
 
+        size = ' '.join((content['duration_size'][2], content['duration_size'][3]))
         index = len(self.content[artist_id]['artist']['tracklist'])
         self.content[artist_id]['artist']['tracklist'][index] = {
-            'name': title[1].text,
-            'duration': element.find('span', class_='playlist-duration').text,
-            'download': self.main_url + download.get('href')
+            'name': content['title'][-1],
+            'duration': content['duration_size'][0],
+            'size': size,
+            'download': content['download_url']
         }
 
     def __len__(self):
